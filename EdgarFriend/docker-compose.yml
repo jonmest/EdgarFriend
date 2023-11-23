@@ -1,0 +1,21 @@
+﻿version: '3.1'
+
+# This is just for local development so the secrets are not sensitive.
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+  ed:
+    image: ghcr.io/jonmest/edgarfriend:latest
+    environment:
+      DB_HOST: db
+      DB_DATABASE: mydatabase
+      DB_USER: myuser
+      DB_PWD: mypassword

@@ -1,0 +1,51 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    env:
+        IMAGE_REPOSITORY_SECRET: ${{ secrets.IMAGE_REPOSITORY_SECRET }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0
+    - name: enter
+      run: |
+        ls 
+        ls EdgarFriend
+        cd ~/work/EdgarFriend/EdgarFriend/EdgarFriend/
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet publish ~/work/EdgarFriend/EdgarFriend/EdgarFriend/
+    - name: push
+      run: |
+        docker login --username jonmest --password $IMAGE_REPOSITORY_SECRET ghcr.io/jonmest
+        docker push ghcr.io/jonmest/edgarfriend:latest
+    - name: Set the Kubernetes context
+      uses: azure/k8s-set-context@v2
+      with:
+        method: service-account
+        k8s-url: https://3f4242d5-1a18-4133-830e-60afc02f9109.vultr-k8s.com:6443
+        k8s-secret: ${{ secrets.KUBERNETES_SECRET }}
+    - name: Deploy to the Kubernetes cluster
+      uses: azure/k8s-deploy@v4.9
+      with:
+        namespace: default
+        manifests: |
+          EdgarFriend/job.yaml
+        images: |
+          ghcr.io/jonmest/edgarfriend:latest
