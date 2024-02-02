@@ -40,6 +40,12 @@ Set the following environment variables:
 - DB_USER
 - DB_PWD
 
+Create a migration and apply it to the database:
+```
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
 Run the program using the .NET CLI:
 ```
 dotnet run
